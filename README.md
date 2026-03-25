@@ -65,9 +65,9 @@ Runs on: http://127.0.0.1:8000
 
 This project helps:
 
--Students improve their resumes
--Job seekers optimize resumes for ATS systems
--Recruiters quickly evaluate candidate resumes
+* Students improve their resumes
+* Job seekers optimize resumes for ATS systems
+* Recruiters quickly evaluate candidate resumes
 
 ---
 

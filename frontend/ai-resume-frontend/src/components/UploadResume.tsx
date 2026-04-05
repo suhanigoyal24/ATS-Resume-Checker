@@ -7,7 +7,7 @@ export default function UploadResume() {
   const [result, setResult] = useState<any>(null);
 
   const handleUpload = async () => {
-    console.log("BUTTON CLICKED"); // debug
+    console.log("BUTTON CLICKED");
 
     if (!file) {
       alert("Please select a file!");
@@ -16,9 +16,7 @@ export default function UploadResume() {
 
     try {
       const data = await uploadResume(file, job);
-
       console.log("API Response:", data);
-
       setResult(data);
     } catch (error) {
       console.error(error);
@@ -27,30 +25,39 @@ export default function UploadResume() {
   };
 
   return (
-    <div>
-      <h2>Upload Resume</h2>
+    <div className="flex justify-center mt-20">
+      <div className="w-[400px] text-center space-y-4">
 
-      <input
-        type="file"
-        onChange={(e: any) => setFile(e.target.files[0])}
-      />
+        <h2 className="text-xl font-semibold">Upload Resume</h2>
 
-      <textarea
-        placeholder="Job description"
-        value={job}
-        onChange={(e) => setJob(e.target.value)}
-      />
+        <input
+          type="file"
+          onChange={(e: any) => setFile(e.target.files[0])}
+          className="w-full"
+        />
 
-      <button onClick={handleUpload}>
-        Upload Resume
-      </button>
+        <textarea
+          placeholder="Job description"
+          value={job}
+          onChange={(e) => setJob(e.target.value)}
+          className="w-full p-2 rounded text-black"
+        />
 
-      {result && (
-        <div>
-          <h3>Score: {result.score}</h3>
-          <p>Keywords: {result.matched_keywords.join(", ")}</p>
-        </div>
-      )}
+        <button
+          onClick={handleUpload}
+          className="bg-blue-500 text-white px-4 py-2 rounded w-full"
+        >
+          Upload Resume
+        </button>
+
+        {result && (
+          <div className="mt-4 text-left">
+            <h3>Score: {result.score}</h3>
+            <p>Keywords: {result.matched_keywords.join(", ")}</p>
+          </div>
+        )}
+
+      </div>
     </div>
   );
 }

@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+// src/App.tsx
+import { BrowserRouter, Routes, Route } from "react-router-dom"; 
 
 import DashboardPage from "./pages/Dashboard";
 import UploadPage from "./pages/Upload";

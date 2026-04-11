@@ -93,16 +93,32 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # DEFAULT PK
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CORS (for React frontend)
+# =============================================================================
+# CORS & CSRF CONFIGURATION (for React/Vite frontend)
+# =============================================================================
+
+# Allow your React dev server to call Django API
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
 ]
 
+# Allow cookies/auth headers if needed (e.g., for login sessions)
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRF (important for POST requests)
+# Trusted origins for CSRF protection (required for POST/PUT/DELETE requests)
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+]
+
+# Optional: Allow all headers/methods from React (useful during development)
+CORS_ALLOW_ALL_HEADERS = True
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
 ]

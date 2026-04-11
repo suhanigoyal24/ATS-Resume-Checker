@@ -181,7 +181,7 @@ def _generate_recommendations(missing_skills: list, exp_score: float, edu_score:
         recs.append("💡 Tailor resume to emphasize matched keywords from job description")
     return recs
 
-# Explicit exports - prevents circular import issues
+# ✅ Explicit exports - prevents circular import issues
 __all__ = [
     'nlp',
     'STOPWORDS', 

@@ -1,17 +1,30 @@
 // src/types/index.ts
-// Single, clean Candidate interface
+
+export interface MatchReport {
+  matched_keywords: string[];
+  missing_keywords: string[];
+  section_scores: {
+    skills: number;
+    experience: number;
+    education: number;
+    keywords: number;
+  };
+  recommendations: string[];
+}
 
 export interface Candidate {
-  id?: number;              // Optional: API may not always send id
-  name: string;             // Required: candidate name
-  score: number;            // Required: ATS match score (0-100)
-  skills?: string[];        // Optional: array of matched skills
-  resume_url?: string;      // Optional: link to resume file
-  [key: string]: any;       // Allow extra fields from API response
+  id?: number;
+  name: string;
+  score: number;
+  skills?: string[];
+  resume_url?: string;
+  matched_keywords?: string[];
+  match_report?: MatchReport;
+  [key: string]: any;
 }
 
 export interface UploadResumeProps {
-  onUpload: (candidate: Candidate) => void;
+  onUpload?: (candidate: Candidate) => void;
   onBatchComplete?: () => void;
 }
 
@@ -23,5 +36,3 @@ export interface DashboardState {
   search: string;
   minScore: number;
 }
-
-

@@ -11,6 +11,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { Download, LayoutGrid, List } from "lucide-react";
 import type { Candidate } from "../types";
 
 export default function Dashboard() {
@@ -19,6 +20,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState("");
   const [minScore, setMinScore] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
   // Fetch candidates from Django API
   useEffect(() => {
@@ -58,6 +60,27 @@ export default function Dashboard() {
       return matchesSearch && meetsScore;
     })
     .sort((a, b) => b.score - a.score);
+
+  // CSV Export function
+  const exportToCSV = () => {
+    const headers = ["Name", "Score", "Matched Keywords", "Missing Keywords", "Status"];
+    const rows = filteredCandidates.map(c => [
+      c.name,
+      c.score,
+      (c.match_report?.matched_keywords || []).join("; "),
+      (c.match_report?.missing_keywords || []).join("; "),
+      c.score >= 80 ? "Strong Match" : c.score >= 60 ? "Good Match" : "Needs Review"
+    ]);
+    
+    const csv = [headers, ...rows].map(r => r.map(cell => `"${cell}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ats_results_${new Date().toISOString().split("T")[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Loading state
   if (loading) {
@@ -128,23 +151,97 @@ export default function Dashboard() {
           </select>
         </div>
 
-        {/* Candidate Grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
-          {filteredCandidates.map((candidate, index) => (
-            <div key={candidate.id || index} className="relative group">
-              {/* Top Candidate Badge */}
-              {index === 0 && filteredCandidates.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1 text-xs font-bold rounded-full shadow-lg z-10 animate-pulse">
-                  🏆 #1
-                </span>
-              )}
-              <CandidateCard {...candidate} />
-            </div>
-          ))}
+        {/* View Toggle + Export */}
+        <div className="flex justify-between items-center mt-4 mb-2">
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+            <button 
+              onClick={() => setViewMode("grid")} 
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition ${
+                viewMode === "grid" ? "bg-white shadow text-gray-900" : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <LayoutGrid size={16} /> Grid
+            </button>
+            <button 
+              onClick={() => setViewMode("table")} 
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition ${
+                viewMode === "table" ? "bg-white shadow text-gray-900" : "text-gray-600 hover:text-gray-900"
+              }`}
+            >
+              <List size={16} /> Table
+            </button>
+          </div>
+          
+          <button 
+            onClick={exportToCSV} 
+            disabled={filteredCandidates.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium transition"
+          >
+            <Download size={16} /> Export CSV
+          </button>
         </div>
 
+        {/* Candidate Display - Grid or Table */}
+        {viewMode === "grid" ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-2">
+            {filteredCandidates.map((candidate, index) => (
+              <div key={candidate.id || index} className="relative group">
+                {index === 0 && filteredCandidates.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white px-3 py-1 text-xs font-bold rounded-full shadow-lg z-10">🏆 #1</span>
+                )}
+                <CandidateCard {...candidate} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="mt-2 bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-gray-50 border-b">
+                  <tr>
+                    <th className="p-4 font-semibold text-gray-700">Candidate</th>
+                    <th className="p-4 font-semibold text-gray-700">Score</th>
+                    <th className="p-4 font-semibold text-gray-700">Matched Keywords</th>
+                    <th className="p-4 font-semibold text-gray-700">Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredCandidates.map((c, i) => (
+                    <tr key={c.id || i} className="border-b hover:bg-gray-50 transition">
+                      <td className="p-4 font-medium text-gray-900">{c.name}</td>
+                      <td className="p-4">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${
+                          c.score >= 80 ? "bg-green-100 text-green-800" : 
+                          c.score >= 60 ? "bg-yellow-100 text-yellow-800" : 
+                          "bg-red-100 text-red-800"
+                        }`}>
+                          {c.score}%
+                        </span>
+                      </td>
+                      <td className="p-4 text-gray-600 max-w-xs truncate">
+                        {(c.match_report?.matched_keywords || []).slice(0, 4).join(", ")}
+                        {(c.match_report?.matched_keywords || []).length > 4 && " +"}
+                      </td>
+                      <td className="p-4">
+                        <span className={`text-xs font-medium ${
+                          c.score >= 80 ? "text-green-600" : c.score >= 60 ? "text-yellow-600" : "text-red-600"
+                        }`}>
+                          {c.score >= 80 ? "Strong Match" : c.score >= 60 ? "Good Match" : "Needs Review"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {filteredCandidates.length === 0 && (
+              <p className="text-center py-8 text-gray-500">No candidates match your filters</p>
+            )}
+          </div>
+        )}
+
         {/* Empty State */}
-        {filteredCandidates.length === 0 && (
+        {filteredCandidates.length === 0 && viewMode === "grid" && (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🔍</div>
             <p className="text-gray-500 text-lg font-medium">

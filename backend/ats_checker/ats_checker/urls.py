@@ -3,13 +3,18 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from django.http import HttpResponseRedirect  # ← This import is REQUIRED
+
+def redirect_to_react(request):
+    """Redirect root URL to React frontend (Vite dev server)"""
+    return HttpResponseRedirect("http://localhost:5173")  # ← Vite port
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('analyzer.urls')),  # All API routes under /api/
+    path('api/', include('analyzer.urls')),
     
-    # REMOVE any route that points to a template view like:
-    # path('', views.home, name='home'),  # ← DELETE THIS LINE
+    # 👇 THIS LINE MUST BE HERE (and must be LAST non-media route)
+    path('', redirect_to_react),
 ]
 
 # Serve media files in development
